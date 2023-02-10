@@ -24,13 +24,11 @@ ssh <USER>@<HOST>
 sudo apt install docker.io
 apt install docker-compose
 ```
-
-Создайте папку проекта на удаленном сервере и скопируйте туда файлы docker-compose.yaml, Dockerfile, host.conf:
-
-scp ./<FILENAME> <USER>@<HOST>:/home/<USER>/yamdb_final/
-Подготовка репозитория на GitHub
-Для использования Continuous Integration и Continuous Deployment необходимо в репозитории на GitHub прописать Secrets - переменные доступа к вашим сервисам. Переменые прописаны в workflows/yamdb_workflow.yaml
-
+Скопировать файлы docker-compose.yaml, nginx/default.conf из проекта на сервер в home/<USER>/docker-compose.yaml и home/<USER>/nginx/default.conf соответственно
+```sh
+scp ./<FILENAME> <USER>@<HOST>:/home/<USER>/...
+```
+Добавьте в Secrets GitHub Actions переменные окружения (пример в infra/.env.sample), а также:
 DOCKER_PASSWORD, DOCKER_USERNAME - для загрузки и скачивания образа с DockerHub
 USER, HOST, PASSPHRASE, SSH_KEY - для подключения к удаленному серверу
 TELEGRAM_TO, TELEGRAM_TOKEN - для отправки сообщений в Telegram
