@@ -22,25 +22,40 @@ ssh <USER>@<HOST>
 Установить docker и docker-compose:
 ```sh
 sudo apt install docker.io
-apt install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
 ```
 Скопировать файлы docker-compose.yaml, nginx/default.conf из проекта на сервер в home/<USER>/docker-compose.yaml и home/<USER>/nginx/default.conf соответственно
 ```sh
 scp ./<FILENAME> <USER>@<HOST>:/home/<USER>/...
 ```
 Добавить в Secrets GitHub Actions переменные окружения (пример в infra/.env.sample), а также:
-DOCKER_USERNAME, DOCKER_PASSWORD  - логин и пароль с DockerHub
-USER, HOST, PASSPHRASE, SSH_KEY - имя пользователя, пароль, ключ SSH и ip удаленного сервера
-TELEGRAM_TO, TELEGRAM_TOKEN - токены чата и бота в Telegram
+*DOCKER_USERNAME, DOCKER_PASSWORD  - логин и пароль с DockerHub
+*USER, HOST, PASSPHRASE, SSH_KEY - имя пользователя, пароль, ключ SSH и ip удаленного сервера
+*TELEGRAM_TO, TELEGRAM_TOKEN - токены чата и бота в Telegram
 
-Развертывание приложения
-При пуше в ветку main приложение пройдет тесты, обновит образ на DockerHub и сделает деплой на сервер. Дальше необходимо подлкючиться к серверу.
+## Установка:
+При пуше в ветку main запустится Workflow:
+*Проверка кода на соответствие PEP8
+*Проверка pytest
+*Сборка и пуш образов на Docker Hub
+*Деплой проекта на сервер
+*Уведомление в Telegram об успешном завершении Workflow
+После завершения Workflow:
+Подключиться к удаленному серверу:
+```sh
 ssh <USER>@<HOST>
-Перейдите в запущенный контейнер приложения командой:
-docker container exec -it <CONTAINER ID> bash
-Внутри контейнера необходимо выполнить миграции и собрать статику приложения:
-python manage.py collectstatic --no-input
-python manage.py migrate
-Для использования панели администратора по адресу http://130.193.38.100/admin/ необходимо создать суперпользователя.
-python manage.py createsuperuser.
-К проекту по адресу http://130.193.38.100/redoc/ подключена документация API. В ней описаны шаблоны запросов к API и ответы. Для каждого запроса указаны уровни прав доступа - пользовательские роли, которым разрешён запрос.
+```
+Собрать статические файлы:
+```sh
+docker-compose exec web python manage.py collectstatic --no-input
+```
+Выполнить миграции:
+```sh
+docker-compose exec web python manage.py makemigrations
+docker-compose exec web python manage.py migrate --noinput
+```
+Создать суперпользователя:
+```sh
+docker-compose exec web python manage.py createsuperuser
+```
