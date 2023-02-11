@@ -58,3 +58,6 @@ docker-compose exec web python manage.py migrate --noinput
 ```sh
 docker-compose exec web python manage.py createsuperuser
 ```
+
+## Развернутый проект:
+http://158.160.12.177/redoc/
